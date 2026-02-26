@@ -42,76 +42,6 @@ function App() {
   // 分頁功能
   const [pagination, setPagination] = useState({});
 
-  //modalType
-
-  //表單狀態更新
-  const handleModalInputChange = (e) => {
-    const { name, value, checked, type } = e.target;
-
-    // console.log(name, value);//測試用
-    setTemplateProduct((preData) => ({
-      ...preData, //保留原有屬性
-      [name]: type === 'checkbox' ? checked : value, //更新特定屬性
-    }));
-  };
-
-  //圖片狀態更新
-  const handleModalImageChange = (index, value) => {
-    setTemplateProduct((pre) => {
-      const newImage = [...pre.imagesUrl]; // 複製陣列
-      newImage[index] = value; // 更新特定索引
-      //優化：新增後自動再新增一個空白輸入框及增加產品照片最多新增五筆
-      if (
-        value !== '' &&
-        index === newImage.length - 1 &&
-        newImage.length < 5
-      ) {
-        newImage.push('');
-      }
-      //優化：清空輸入框時，移除最後的空白輸入框
-      if (
-        value === '' &&
-        newImage.length > 1 &&
-        newImage[newImage.length - 1] === ''
-      ) {
-        newImage.pop();
-      }
-
-      return {
-        // 回傳新狀態
-        ...pre,
-        imagesUrl: newImage,
-      };
-    });
-  };
-
-  //新增資料內的新增圖片按鈕
-  const handleAddImage = () => {
-    setTemplateProduct((pre) => {
-      const newImage = [...pre.imagesUrl]; // 複製陣列
-      newImage.push(''); //新增資料
-
-      return {
-        // 回傳新狀態
-        ...pre,
-        imagesUrl: newImage,
-      };
-    });
-  };
-
-  //新增資料內的刪除圖片按鈕
-  const handleRemoveImage = () => {
-    setTemplateProduct((pre) => {
-      const newImage = [...pre.imagesUrl]; // 複製陣列
-      newImage.pop(); //刪除最後一個
-
-      return {
-        // 回傳新狀態
-        ...pre,
-        imagesUrl: newImage,
-      };
-    });
-  };
   // 串接API
   // 設定取得產品資料列表 API (get)
   const getProducts = async (page = 1) => {
@@ -127,82 +57,6 @@ function App() {
       alert(
         '取得產品列表失敗：' + (error.response?.data?.message || error.message),
       );
-    }
-  };
-
-  // 串接API---新增/更新產品
-  const updateProductData = async (id) => {
-    // 決定 API 端點和方法
-    let url = `${API_BASE}/api/${API_PATH}/admin/product`;
-    let method = 'post';
-    //因為只有新增/更新兩種，就用if...else if 就可以了
-    if (modalType === 'edit') {
-      url = `${API_BASE}/api/${API_PATH}/admin/product/${id}`;
-      method = 'put';
-    } else if (modalType === 'create') {
-      url = `${API_BASE}/api/${API_PATH}/admin/product`;
-      method = 'post';
-    }
-    // 設定需要轉成數字及布林值資料，並且如果IMG圖片是空白時不顯示
-    const productData = {
-      data: {
-        ...templateProduct,
-        origin_price: Number(templateProduct.origin_price), // 轉換為數字
-        price: Number(templateProduct.price), // 轉換為數字
-        is_enabled: templateProduct.is_enabled ? 1 : 0, // 轉換為數字
-        imagesUrl: [...templateProduct.imagesUrl.filter((url) => url !== '')], //過濾空白
-      },
-    };
-
-    try {
-      // const response = await axios.post(url, productData);可以優化成下面程式碼
-      const response = await axios[method](url, productData);
-      console.log(response.data);
-      // 關閉 Modal 並重新載入資料
-      closeModal(); // 關閉 Modal
-      getProducts(); // 重新取得API更新畫面
-    } catch (error) {
-      console.log(error.response);
-    }
-  };
-
-  // 串接API---刪除產品
-  const delProduct = async (id) => {
-    try {
-      const response = await axios.delete(
-        `${API_BASE}/api/${API_PATH}/admin/product/${id}`,
-      );
-      console.log(response.data);
-      // 關閉 Modal 並重新載入資料
-      closeModal(); // 關閉 Modal
-      getProducts(); // 重新取得API更新畫面
-    } catch (error) {
-      console.log(error.response);
-    }
-  };
-
-  // 串接API---上傳圖片檔案
-  const uploadImage = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) {
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append('file-to-upload', file);
-      // API
-      const response = await axios.post(
-        `${API_BASE}/api/${API_PATH}/admin/upload`,
-        formData,
-      );
-
-      setTemplateProduct((pre) => ({
-        ...pre,
-        imageUrl: response.data.imageUrl,
-      }));
-    } catch (error) {
-      console.log(error.response);
     }
   };
 
@@ -243,10 +97,10 @@ function App() {
     // 設定 Modal 類型並顯示
     setModalType(type);
     // 正確：用 setState 並回傳新物件
-    setTemplateProduct((pre) => ({
-      ...pre, //pre = 更新前的舊資料
+    setTemplateProduct({
+      ...INITIAL_TEMPLATE_DATA, //每次都從乾淨的初始狀態開始
       ...product,
-    }));
+    });
     productModalRef.current.show();
   };
   // 寫一個closeModal的方式，使用 ref 控制 Modal(互動視窗)
@@ -327,13 +181,7 @@ function App() {
       <ProductModal
         modalType={modalType}
         templateProduct={templateProduct}
-        handleModalInputChange={handleModalInputChange}
-        handleModalImageChange={handleModalImageChange}
-        handleAddImage={handleAddImage}
-        handleRemoveImage={handleRemoveImage}
-        updateProductData={updateProductData}
-        delProduct={delProduct}
-        uploadImage={uploadImage}
+        getProducts={getProducts}
         closeModal={closeModal}
       />
     </>
