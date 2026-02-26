@@ -406,6 +406,25 @@ function ProductModal({ modalType, templateProduct, getProducts, closeModal }) {
                       </label>
                     </div>
                   </div>
+                  {/*新增一個自訂欄位功能：商品推薦度*/}
+                  <div className="mb-3">
+                    <label className="form-check-label" htmlFor="star">
+                      商品推薦度
+                    </label>
+                    <select
+                      id="star"
+                      name="star"
+                      className="form-select"
+                      aria-label="Default select example"
+                      value={tempData.size}
+                      onChange={(e) => handleModalInputChange(e)}
+                    >
+                      <option value="">請選擇</option>
+                      <option value="lg">1星</option>
+                      <option value="md">2星</option>
+                      <option value="sm">3星</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             )}
