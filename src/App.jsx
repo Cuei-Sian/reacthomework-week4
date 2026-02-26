@@ -195,6 +195,31 @@ function App() {
     }
   };
 
+  // 串接API---上傳圖片檔案
+  const uploadImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('file-to-upload', file);
+      // API
+      const response = await axios.post(
+        `${API_BASE}/api/${API_PATH}/admin/upload`,
+        formData,
+      );
+
+      setTemplateProduct((pre) => ({
+        ...pre,
+        imageUrl: response.data.imageUrl,
+      }));
+    } catch (error) {
+      console.log(error.response);
+    }
+  };
+
   //串接API
   const onSubmit = async (e) => {
     e.preventDefault(); //停止onSubmit的預設事件，為避免原生的預設事件發生
@@ -406,6 +431,7 @@ function App() {
         handleRemoveImage={handleRemoveImage}
         updateProductData={updateProductData}
         delProduct={delProduct}
+        uploadImage={uploadImage}
         closeModal={closeModal}
       />
     </>
