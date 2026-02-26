@@ -4,6 +4,7 @@ import axios from 'axios';
 import * as bootstrap from 'bootstrap';
 import './assets/style.css';
 import ProductModal from './components/ProductModal';
+import Pagination from './components/Pagination';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -43,6 +44,9 @@ function App() {
   const [templateProduct, setTemplateProduct] = useState(INITIAL_TEMPLATE_DATA);
   // 狀態驅動畫面的典型應用,Modal 本身只負責「顯示」,行為由 modalType 決定（create / edit / delete）
   const [modalType, setModalType] = useState(''); // "create", "edit", "delete"
+  // 分頁功能
+  const [pagination, setPagination] = useState({});
+
   //modalType
   //表單輸入處理
   const handleInputChange = (e) => {
@@ -124,12 +128,13 @@ function App() {
   };
   // 串接API
   // 設定取得產品資料列表 API (get)
-  const getProducts = async () => {
+  const getProducts = async (page = 1) => {
     try {
       const response = await axios.get(
-        `${API_BASE}/api/${API_PATH}/admin/products`,
+        `${API_BASE}/api/${API_PATH}/admin/products?page=${page}`,
       );
       setProducts(response.data.products);
+      setPagination(response.data.pagination); //分頁功能
       console.log('產品列表載入成功：', response.data.products);
     } catch (error) {
       console.log('取得產品列表失敗：', error.response?.data?.message);
@@ -388,6 +393,7 @@ function App() {
               ))}
             </tbody>
           </table>
+          <Pagination pagination={pagination} onChangePage={getProducts} />
         </div>
       )}
       {/*!-- Modal互動視窗 --*/}
